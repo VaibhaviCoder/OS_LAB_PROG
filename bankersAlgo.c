@@ -1,156 +1,114 @@
 #include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<unistd.h>
+struct file
+{
+int all[10];
+int max[10];
+int need[10];
+int flag;
+};
 
-int sze_p,sze_r,i,j,idx,k;
 
-int main(){
+void main()
+{
+struct file f[10];
+int fl;
+int i, j, k, p, b, n, r, g, cnt=0, id, newr;
+int avail[10],seq[10];
 
-    printf("Bankers Algorithm\n");
-    
-    printf("Enter Number of Process:\n");
-    
-    scanf("%d",&sze_p);
-
-    printf("Enter Number of Resources:\n");
-
-    scanf("%d",&sze_r);  
-
-    int alc[sze_p][sze_r],max_r[sze_p][sze_r],need[sze_p][sze_r]; 
-
-    printf("Enter Allocation of Instances of Resources per Process: \n");
-
-  for(i=0;i<sze_p;i++)
-    for(j=0;j<sze_r;j++)
-        scanf("%d",&alc[i][j]);
-
-  printf("Allocation Matrix:-\n");
-
-  for(i=0;i<sze_p;i++){
-    for(j=0;j<sze_r;j++)
-        printf("%d ",alc[i][j]);
-    printf("\n");
+printf("Enter number of processes -- ");
+scanf("%d",&n);
+printf("Enter number of resources -- ");
+scanf("%d",&r);
+for(i=0;i<n;i++)
+{
+printf("Enter details for P%d",i);
+printf("\nEnter allocation\t -- \t");
+for(j=0;j<r;j++)
+scanf("%d",&f[i].all[j]);
+printf("Enter Max\t\t -- \t");
+for(j=0;j<r;j++)
+scanf("%d",&f[i].max[j]);
+f[i].flag=0;
 }
-  printf("Enter Max_rimum Allocation Instances of Resources per Process: \n");
-
-  for(i=0;i<sze_p;i++)
-    for(j=0;j<sze_r;j++)
-        scanf("%d",&max_r[i][j]);
-
-  printf("Maximum Matrix:-\n");
-
-  for(i=0;i<sze_p;i++){
-    for(j=0;j<sze_r;j++)
-        printf("%d ",max_r[i][j]);
-    printf("\n");
+printf("\nEnter Available Resources\t -- \t");
+for(i=0;i<r;i++)
+scanf("%d",&avail[i]);
+printf("\nEnter New Request Details -- ");
+printf("\nEnter pid \t -- \t");
+scanf("%d",&id);
+printf("Enter Request for Resources \t -- \t");
+for(i=0;i<r;i++)
+{
+scanf("%d",&newr);
+f[id].all[i] += newr;
+avail[i]=avail[i] - newr;
 }
-
-  for(i=0;i<sze_p;i++)
-    for(j=0;j<sze_r;j++)
-        need[i][j]=max_r[i][j]-alc[i][j];
-
-  printf("Need Matrix:\n");
-
-  for(i=0;i<sze_p;i++){
-    for(j=0;j<sze_r;j++)
-        printf("%d ",need[i][j]);
-  printf("\n");
+for(i=0;i<n;i++)
+{
+for(j=0;j<r;j++)
+{
+f[i].need[j]=f[i].max[j]-f[i].all[j];
+if(f[i].need[j]<0)
+f[i].need[j]=0;
 }
-
-  int avl[sze_r];
-
-  printf("Enter Available Instances Resources: \n");
-
-  for(i=0;i<sze_r;i++)
-    scanf("%d",&avl[i]);
-
-  int taken[sze_p];
-
-  for(int i=0;i<sze_p;i++)
-    taken[i]=0;
-
-  int work[sze_r];
-  
-  for(i=0;i<sze_r;i++)work[i]=avl[i];
-  
-  int ans[sze_p]; 
-
-  printf("Available Resources:");
-
-  for(k=0;k<sze_r;k++)
-    printf("%d ",avl[k]);
- 
-  printf("\n");
- 
-  for(k=0;k<sze_p;k++){
-      for(i=0;i<sze_p;i++){
-         if(!taken[i]){
-               int find_p=1;
-               for(j=0;j<sze_r;j++){
-                   if(need[i][j]>avl[j])
-                   {
-                     find_p=0;
-                     break;
-                   }
-               }
-               if(find_p){
-                 ans[idx++]=i;  
-                 int v=0; 
-                 for(v=0;v<sze_r;v++)
-                 avl[v]+=alc[i][v];
-                 taken[i]=1;
-               }
-               
-        }
-
-    }
 }
-  int s_state=1;
- 
-  for(i=0;i<sze_p;i++){
-    if(!taken[i]){
-        s_state=0;
-        break;
-    }
+cnt=0;
+fl=0;
+while(cnt!=n)
+{
+g=0;
+for(j=0;j<n;j++)
+{
+if(f[j].flag==0)
+{
+b=0;
+for(p=0;p<r;p++)
+{
+if(avail[p]>=f[j].need[p])
+b=b+1;
+else
+b=b-1;
 }
+if(b==r)
+{
+printf("\nP%d is visited",j);
+seq[fl++]=j;
+f[j].flag=1;
+for(k=0;k<r;k++)
+avail[k]=avail[k]+f[j].all[k];
+cnt=cnt+1;
+printf("(");
+for(k=0;k<r;k++)
+printf("%3d",avail[k]);
+printf(")");
+g=1;
+}
+}
+}
+if(g==0)
+{
+printf("\n REQUEST NOT GRANTED -- DEADLOCK OCCURRED");
+printf("\n SYSTEM IS IN UNSAFE STATE");
+goto y;
+}
+}
+printf("\nSYSTEM IS IN SAFE STATE");
+printf("\nThe Safe Sequence is -- (");
+for(i=0;i<fl;i++)
+printf("P%d ",seq[i]);
+printf(")");
+ y: printf("\nProcess\t\tAllocation\t\tMax\t\t\tNeed\n");
+for(i=0;i<n;i++)
+{
+printf("P%d\t",i);
+ for(j=0;j<r;j++)
 
-  if(!s_state){
-    printf("NOT IN SAFE STATE\n");
+ printf("%6d",f[i].all[j]);
+for(j=0;j<r;j++)
+printf("%6d",f[i].max[j]);
+for(j=0;j<r;j++)
+printf("%6d",f[i].need[j]);
+printf("\n");
 }
-  
-  else{
-    printf("SAFE SEQUENCE:- ");
-    for(j=0;j<sze_p;j++){
-        printf("P%d ",ans[j]);
-    }
-    printf("\n");
-}
-
-  printf("Enter Request: \n");
-  
-  int Req_r[sze_r];
-  
-  for(i=0;i<sze_r;i++)
-    scanf("%d",&Req_r[i]);
-  
-  int flag=1;
-  
-  for(i=0;i<sze_r;i++){
-    if(work[i]<Req_r[i])
-    {
-      flag=0;
-      break;
-    }
-}
-  
-  if(flag && s_state){
-    printf("Granted\n");
-}
- 
-  else 
-    printf("No\n");
-
-  return 0;
 
 }
